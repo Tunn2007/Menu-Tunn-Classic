@@ -1,0 +1,156 @@
+--// TUNN HUBx PRO - BẢN THOÁNG DỄ SỬA CHO TÚN
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local lp = game:GetService("Players").LocalPlayer
+
+-- Xóa Hub cũ trước khi chạy bản mới
+local old = lp.PlayerGui:FindFirstChild("TunnProHub")
+if old then old:Destroy() end
+
+local gui = Instance.new("ScreenGui", lp.PlayerGui); gui.Name = "TunnProHub"; gui.ResetOnSpawn = false
+
+-- ==========================================
+-- [ 1. ICON CÁ DI CHUYỂN ]
+-- ==========================================
+local icon = Instance.new("TextButton", gui)
+icon.Size = UDim2.new(0, 45, 0, 45); icon.Position = UDim2.new(0, 10, 0.5, 0)
+icon.Text = "🐟"; icon.TextSize = 30; icon.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+icon.TextColor3 = Color3.new(1, 1, 1); icon.ZIndex = 10; Instance.new("UICorner", icon)
+local iS = Instance.new("UIStroke", icon); iS.Thickness = 2
+
+-- Script kéo thả mượt cho Mobile
+local dragging, dragInput, dragStart, startPos
+icon.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true; dragStart = input.Position; startPos = icon.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+    end
+end)
+icon.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        icon.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- ==========================================
+-- [ 2. KHUNG CHÍNH & RGB ]
+-- ==========================================
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 560, 0, 320); main.Position = UDim2.new(0.5, -280, 0.5, -160)
+main.BackgroundColor3 = Color3.fromRGB(12, 12, 12); main.Visible = false; main.Active = true; main.Draggable = true
+Instance.new("UICorner", main); local fS = Instance.new("UIStroke", main); fS.Thickness = 2
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, 0, 0, 45); title.Text = "TUNN HUBx"; title.TextColor3 = Color3.new(1, 1, 1); title.TextSize = 22; title.Font = Enum.Font.SourceSansBold; title.BackgroundTransparency = 1
+
+-- Sidebar (Mẹ)
+local sideBarFrame = Instance.new("Frame", main)
+sideBarFrame.Size = UDim2.new(0, 140, 0.82, 0); sideBarFrame.Position = UDim2.new(0.02, 0, 0.15, 0); sideBarFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18); Instance.new("UICorner", sideBarFrame)
+local sideBar = Instance.new("ScrollingFrame", sideBarFrame)
+sideBar.Size = UDim2.new(1, 0, 0.95, 0); sideBar.BackgroundTransparency = 1; sideBar.ScrollBarThickness = 0
+local sideLayout = Instance.new("UIListLayout", sideBar); sideLayout.Padding = UDim.new(0, 5); sideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- Content (Con)
+local contentFrame = Instance.new("Frame", main)
+contentFrame.Size = UDim2.new(0, 385, 0.82, 0); contentFrame.Position = UDim2.new(0.29, 0, 0.15, 0); contentFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 22); Instance.new("UICorner", contentFrame)
+local contentArea = Instance.new("ScrollingFrame", contentFrame)
+contentArea.Size = UDim2.new(0.95, 0, 0.95, 0); contentArea.Position = UDim2.new(0.025, 0, 0.025, 0); contentArea.BackgroundTransparency = 1; contentArea.ScrollBarThickness = 2
+local contentLayout = Instance.new("UIGridLayout", contentArea); contentLayout.CellSize = UDim2.new(0, 175, 0, 40); contentLayout.CellPadding = UDim2.new(0, 10, 0, 10)
+
+-- Hàm xử lý Tab
+local function addTab(tabName, scripts)
+    local btn = Instance.new("TextButton", sideBar)
+    btn.Size = UDim2.new(0.9, 0, 0, 35); btn.Text = tabName; btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30); btn.TextColor3 = Color3.new(0.8, 0.8, 0.8); btn.Font = Enum.Font.SourceSansBold; Instance.new("UICorner", btn)
+    btn.MouseButton1Click:Connect(function()
+        for _, v in pairs(contentArea:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+        for _, s in pairs(scripts) do
+            local sBtn = Instance.new("TextButton", contentArea)
+            sBtn.Text = s.Name; sBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40); sBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", sBtn)
+            sBtn.MouseButton1Click:Connect(function() if s.Link ~= "" then loadstring(game:HttpGet(s.Link))() end end)
+        end
+    end)
+end
+
+-- Hiệu ứng màu mè
+task.spawn(function()
+    while task.wait(0.05) do local c = Color3.fromHSV(tick() % 5 / 5, 0.8, 1) fS.Color = c; iS.Color = c; title.TextColor3 = c end
+end)
+icon.MouseButton1Click:Connect(function() main.Visible = not main.Visible end)
+
+
+-- ==========================================
+-- [ 3. DANH SÁCH GAME - TÚN SỬA Ở ĐÂY ]
+-- ==========================================
+
+-- Tập 1: Classic
+addTab("🐟 Classic", {
+    {Name = "Tool Cá Nhân", Link = "https://raw.githubusercontent.com/Tunn2007/Menu-Tunn-Classic/61f13134aed018e1ff78c5d0addaec00dd836846/Tool%20c%C3%A1%20nh%C3%A2n"},
+
+    
+    {Name = "Infinite Yield", Link = "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
+    {Name = "AimBot", Link = "https://raw.githubusercontent.com/DanielHubll/DanielHubll/refs/heads/main/Aimbot%20Mobile"},
+  })  
+
+-- Tập 2: Game 1 (Thay "Game 1" thành tên game anh thích)
+addTab("🎮 Game 1", {
+    {Name = "Lệnh 1", Link = "DÁN_LINK_VÀO_ĐÂY"},
+    {Name = "Lệnh 2", Link = ""},
+})
+
+
+-- Tập 3: Game 2
+addTab("🎮 Game 2", {
+    {Name = "Lệnh 1", Link = ""},
+})
+
+
+-- Tập 4: Game 3
+addTab("🎮 Game 3", {
+    {Name = "Lệnh 1", Link = ""},
+})
+
+
+-- Tập 5: Game 4
+addTab("🎮 Game 4", {
+    {Name = "Lệnh 1", Link = ""},
+})
+
+
+-- Tập 6: Game 5
+addTab("🎮 Game 5", {
+    {Name = "Lệnh 1", Link = ""},
+})
+
+
+-- Tập 7: Game 6
+addTab("🎮 Game 6", {
+    {Name = "Lệnh 1", Link = ""},
+})
+
+
+-- Tập 8: Game 7
+addTab("🎮 Game 7", {
+    {Name = "Lệnh 1", Link = ""},
+})
+
+
+-- Tập 9: Game 8
+addTab("🎮 Game 8", {
+    {Name = "Lệnh 1", Link = ""},
+})
+
+
+-- Tập 10: Game 9
+addTab("🎮 Game 9", {
+    {Name = "Lệnh 1", Link = ""},
+})
+
+
+-- Tập 11: Game 10
+addTab("🎮 Game 10", {
+    {Name = "Lệnh 1", Link = ""},
+})
