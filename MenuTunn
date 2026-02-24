@@ -94,6 +94,7 @@ addTab("🐟 Classic", {
     {Name = "Infinite Yield", Link = "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
     {Name = "AimBot", Link = "https://raw.githubusercontent.com/DanielHubll/DanielHubll/refs/heads/main/Aimbot%20Mobile"},
     {Name = "Infinyty Jump", Link = "https://raw.githubusercontent.com/Tunn2007/Menu-Tunn-Classic/refs/heads/main/Infinity%20jump"},
+    {Name = "Tàng Hình", Link = "https://rawscripts.net/raw/Universal-Script-Awesome-Invisible-man-21074},
   })  
 
 -- Tập 2: Game 1 (Thay "Game 1" thành tên game anh thích)
