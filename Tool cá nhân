@@ -1,23 +1,23 @@
---// Tunn - HỆ THỐNG SIÊU CẤP v2.5 (GIỮ NGUYÊN CHỨC NĂNG CỦA TÚN)
+--// Tunn - HỆ THỐNG SIÊU CẤP v2.6 (UPDATE BY GEMINI)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 
--- GUI Setup (Tối giản, hiện đại)
+-- GUI Setup
 local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.ResetOnSpawn = false
 
--- Icon Cá 🐟 nhỏ gọn
+-- Icon Cá 🐟
 local icon = Instance.new("TextButton", gui)
 icon.Size = UDim2.new(0,35,0,35); icon.Position = UDim2.new(0,10,0,10); icon.Text = "🐟"; icon.TextSize = 20
 icon.BackgroundColor3 = Color3.fromRGB(25,25,25); icon.Active = true; icon.Draggable = true
 Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
 local iS = Instance.new("UIStroke", icon); iS.Thickness = 2
 
--- Frame Tunn hiện đại
+-- Frame Tunn
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0,200,0,300); frame.Position = UDim2.new(0,60,0,60)
+frame.Size = UDim2.new(0,200,0,380); frame.Position = UDim2.new(0,60,0,60) -- Tăng chiều cao tí nhé
 frame.BackgroundColor3 = Color3.fromRGB(15,15,15); frame.Visible = false; frame.Active = true; frame.Draggable = true
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
 local fS = Instance.new("UIStroke", frame); fS.Thickness = 2; fS.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -25,7 +25,7 @@ local fS = Instance.new("UIStroke", frame); fS.Thickness = 2; fS.ApplyStrokeMode
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1,0,0,35); title.Text = "Tunn"; title.BackgroundTransparency = 1; title.Font = Enum.Font.SourceSansBold; title.TextSize = 18
 
--- Hiệu ứng RGB cho Tún
+-- RGB Effect
 task.spawn(function()
     while task.wait(0.01) do
         local color = Color3.fromHSV(tick()%5/5, 0.8, 1)
@@ -35,8 +35,9 @@ end)
 
 icon.MouseButton1Click:Connect(function() frame.Visible = not frame.Visible end)
 
--- [ GIỮ NGUYÊN 100% BIẾN VÀ CHỨC NĂNG GỐC CỦA TÚN ]
+-- [ BIẾN VÀ TRẠNG THÁI ]
 local speedValue, jumpValue = 25, 50
+local speedEnabled, jumpEnabled = false, false -- Hai cái mới nè Tún
 local espPlayer, espNPC, noclip, minimapEnabled = false, false, false, false
 local minimapFrame
 
@@ -44,14 +45,14 @@ local function applyStats()
     local char = player.Character
     if char and char:FindFirstChild("Humanoid") then
         local h = char.Humanoid
-        h.WalkSpeed = speedValue
+        h.WalkSpeed = speedEnabled and speedValue or 16
         h.UseJumpPower = true
-        h.JumpPower = jumpValue
-        h.JumpHeight = jumpValue / 7
+        h.JumpPower = jumpEnabled and jumpValue or 50
+        h.JumpHeight = (jumpEnabled and jumpValue or 50) / 7
     end
 end
 
--- Hàm tạo nút Stats hiện đại hơn
+-- Hàm tạo nút Stats
 local function createStat(y,text,getValue,minus,plus)
     local btnFrame = Instance.new("Frame", frame)
     btnFrame.Size = UDim2.new(0.9,0,0,30); btnFrame.Position = UDim2.new(0.05,0,0,y); btnFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
@@ -65,36 +66,43 @@ local function createStat(y,text,getValue,minus,plus)
 	update()
 end
 
-createStat(45,"⚡ Speed", function() return speedValue end, function() speedValue=math.max(25,speedValue-5) end, function() speedValue+=5 end)
-createStat(80,"🦘 Jump", function() return jumpValue end, function() jumpValue=math.max(50,jumpValue-10) end, function() jumpValue+=10 end)
-
--- Hàm tạo nút gạt hiện đại
+-- Nút gạt (Toggle)
 local function toggle(y,name,callback)
 	local b=Instance.new("TextButton",frame); b.Size=UDim2.new(0.9,0,0,28); b.Position=UDim2.new(0.05,0,0,y); b.BackgroundColor3 = Color3.fromRGB(35,35,35); b.TextColor3 = Color3.new(1,1,1); b.TextSize = 12
     Instance.new("UICorner", b)
 	b.MouseButton1Click:Connect(callback); return b
 end
 
-local btnESPPlayer = toggle(120,"ESP Player",function() espPlayer=not espPlayer end)
-local btnESPNPC = toggle(152,"ESP NPC",function() espNPC=not espNPC end)
-local btnNoclip = toggle(184,"Noclip",function() noclip=not noclip end)
-local btnMinimap = toggle(216,"Minimap",function() 
+-- Layout Menu
+local btnSpeed = toggle(45, "Toggle Speed", function() speedEnabled = not speedEnabled; applyStats() end)
+createStat(75,"⚡ Speed Val", function() return speedValue end, function() speedValue=math.max(16,speedValue-5) end, function() speedValue+=5 end)
+
+local btnJump = toggle(115, "Toggle Jump", function() jumpEnabled = not jumpEnabled; applyStats() end)
+createStat(145,"🦘 Jump Val", function() return jumpValue end, function() jumpValue=math.max(50,jumpValue-10) end, function() jumpValue+=10 end)
+
+local btnESPPlayer = toggle(190,"ESP Player",function() espPlayer=not espPlayer end)
+local btnESPNPC = toggle(222,"ESP NPC",function() espNPC=not espNPC end)
+local btnNoclip = toggle(254,"Noclip",function() noclip=not noclip end)
+local btnMinimap = toggle(286,"Minimap",function() 
 	minimapEnabled = not minimapEnabled
 	if minimapEnabled then createMinimap() elseif minimapFrame then minimapFrame:Destroy() end
 end)
 
--- LOOP CHÍNH (GIỮ NGUYÊN SI)
+-- Main Loop
 RunService.RenderStepped:Connect(function()
     applyStats()
-	btnESPPlayer.Text="ESP Player : "..(espPlayer and "ON" or "OFF")
-	btnESPNPC.Text="ESP NPC : "..(espNPC and "ON" or "OFF")
-	btnNoclip.Text="Noclip : "..(noclip and "ON" or "OFF")
-	btnMinimap.Text="Minimap : "..(minimapEnabled and "ON" or "OFF")
+    btnSpeed.Text = "Speed: "..(speedEnabled and "ON" or "OFF")
+    btnJump.Text = "Jump: "..(jumpEnabled and "ON" or "OFF")
+	btnESPPlayer.Text="ESP Player: "..(espPlayer and "ON" or "OFF")
+	btnESPNPC.Text="ESP NPC: "..(espNPC and "ON" or "OFF")
+	btnNoclip.Text="Noclip: "..(noclip and "ON" or "OFF")
+	btnMinimap.Text="Minimap: "..(minimapEnabled and "ON" or "OFF")
     
     if noclip and player.Character then
 		for _,v in pairs(player.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide=false end end
 	end
-
+    
+    -- ESP logic (giữ nguyên của Tún)
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         local myRoot = player.Character.HumanoidRootPart
         for _,model in pairs(workspace:GetDescendants()) do
@@ -119,7 +127,9 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- Minimap logic (giữ nguyên của Tún)
 function createMinimap()
+    -- [ Giữ nguyên code minimap của ông ]
 	if minimapFrame then minimapFrame:Destroy() end
 	minimapFrame = Instance.new("Frame", gui); minimapFrame.Size = UDim2.new(0,150,0,150); minimapFrame.Position = UDim2.new(1,-160,0,10); minimapFrame.BackgroundColor3 = Color3.new(0,0,0); minimapFrame.BackgroundTransparency = 0.5
 	Instance.new("UICorner", minimapFrame).CornerRadius = UDim.new(1,0)
