@@ -1,0 +1,203 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- [ 1. KHAI BÁO BIẾN ]
+local espPlayer = false
+local espNPC = false
+local minimapEnabled = false
+local minimapFrame
+
+-- [ 2. KHỞI TẠO WINDOW ]
+local Window = Rayfield:CreateWindow({
+   Name = "Tunn Hubx | Menu Game",
+   LoadingTitle = "YAMATE KUDASAI🫦",
+   LoadingSubtitle = "by Tún Đz khoai to 🐟",
+   ConfigurationSaving = { Enabled = true, FolderName = "TunConfig", FileName = "MainUI" },
+   KeySystem = false, 
+})
+
+-- [ 3. TAB HOME ]
+local HomeTab = Window:CreateTab("Home", 4483345998)
+local HomeSection = HomeTab:CreateSection("Hệ Thống Siêu Cấp 👁️")
+
+HomeTab:CreateSlider({
+   Name = "Chỉnh Tốc Độ (Walkspeed)",
+   Range = {16, 300},
+   Increment = 1,
+   Suffix = " Speed",
+   CurrentValue = 16,
+   Flag = "SpeedSlider", 
+   Callback = function(Value)
+      if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+      end
+   end,
+})
+
+HomeTab:CreateSlider({
+   Name = "Jump Power",
+   Range = {50, 500},
+   Increment = 1,
+   Suffix = " Power",
+   CurrentValue = 50,
+   Flag = "JumpSlider", 
+   Callback = function(Value)
+      if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+         game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+         game.Players.LocalPlayer.Character.Humanoid.UseJumpPower = true
+      end
+   end,
+})
+
+HomeTab:CreateButton({
+   Name = "Fly",
+   Callback = function()
+      -- Dán loadstring của ông vào đây, bấm là chạy luôn éo nói nhiều
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
+   end,
+})
+
+HomeTab:CreateToggle({
+   Name = "Bản năng vô cực",
+   CurrentValue = false,
+   Flag = "Anti_Touch",
+   Callback = function(Value)
+      _G.TunFeature = Value
+   end,
+})
+
+HomeTab:CreateToggle({
+   Name = "ESP Players",
+   CurrentValue = false,
+   Flag = "ESP_P",
+   Callback = function(Value) espPlayer = Value end,
+})
+
+HomeTab:CreateToggle({
+   Name = "ESP NPC",
+   CurrentValue = false,
+   Flag = "ESP_N",
+   Callback = function(Value) espNPC = Value end,
+})
+
+HomeTab:CreateToggle({
+   Name = "Minimap",
+   CurrentValue = false,
+   Flag = "Minimap_T",
+   Callback = function(Value)
+      minimapEnabled = Value
+      if not Value and minimapFrame then 
+         minimapFrame:Destroy() 
+         minimapFrame = nil
+      end
+   end,
+})
+
+
+-- [ 4. LOGIC CHẠY NGẦM ]
+game:GetService("RunService").RenderStepped:Connect(function()
+    local lp = game.Players.LocalPlayer
+    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
+    local myRoot = lp.Character.HumanoidRootPart
+    local cam = workspace.CurrentCamera
+
+    -- Logic RGB Viền (Chạy ngầm khi bật Toggle)
+    if _G.RGB_Enabled then
+        local hue = tick() % 3 / 3
+        local color = Color3.fromHSV(hue, 1, 1)
+        pcall(function()
+            if Window and Window.Elements and Window.Elements.Main then
+                Window.Elements.Main.Border.Color = color
+            end
+        end)
+    end
+
+    -- [[ VÒNG LẶP QUÉT THỰC THỂ (ESP & ANTI-TOUCH) ]]
+    for _, model in pairs(workspace:GetDescendants()) do
+        if model:IsA("Model") and model ~= lp.Character and model:FindFirstChildOfClass("Humanoid") then
+            local root = model:FindFirstChild("HumanoidRootPart") or model.PrimaryPart
+            if root then
+                local isP = game.Players:GetPlayerFromCharacter(model)
+                
+                -- Logic Bản năng vô cực
+                if not isP then
+                    if _G.TunFeature then
+                        for _, part in pairs(model:GetDescendants()) do
+                            if part:IsA("BasePart") and part.CanTouch == true then
+                                part.CanTouch = false
+                            end
+                        end
+                    else
+                        for _, part in pairs(model:GetDescendants()) do
+                            if part:IsA("BasePart") and part.CanTouch == false then
+                                part.CanTouch = true
+                            end
+                        end
+                    end
+                end
+
+                -- Logic ESP
+                local shouldShow = (isP and espPlayer) or (not isP and espNPC)
+                local hl = model:FindFirstChild("ESPHighlight")
+                local tag = root:FindFirstChild("ESPTag")
+
+                if shouldShow then
+                    if not hl then
+                        hl = Instance.new("Highlight", model); hl.Name = "ESPHighlight"
+                        hl.OutlineColor = isP and Color3.new(0, 0.7, 1) or Color3.new(1, 0, 0); hl.FillTransparency = 1
+                    end
+                    if not tag then
+                        tag = Instance.new("BillboardGui", root); tag.Name = "ESPTag"
+                        tag.Size = UDim2.new(0, 80, 0, 30); tag.StudsOffset = Vector3.new(0, 3, 0); tag.AlwaysOnTop = true
+                        local txt = Instance.new("TextLabel", tag); txt.Size = UDim2.new(1, 0, 1, 0); txt.BackgroundTransparency = 1
+                        txt.TextColor3 = Color3.new(1, 1, 1); txt.TextScaled = true; txt.Font = Enum.Font.GothamBold
+                    end
+                    tag.TextLabel.Text = "▼\n" .. math.floor((root.Position - myRoot.Position).Magnitude) .. "m"
+                else
+                    if hl then hl:Destroy() end
+                    if tag then tag:Destroy() end
+                end
+            end
+        end
+    end
+
+    -- [[ LOGIC MINIMAP ]]
+    if minimapEnabled then
+        if not minimapFrame then
+            minimapFrame = Instance.new("Frame", lp.PlayerGui:FindFirstChildOfClass("ScreenGui") or lp.PlayerGui:GetChildren()[1])
+            minimapFrame.Name = "TunMinimap"
+            minimapFrame.Size = UDim2.new(0, 140, 0, 140)
+            minimapFrame.Position = UDim2.new(1, -160, 0, 20)
+            minimapFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+            minimapFrame.BackgroundTransparency = 0.4
+            Instance.new("UICorner", minimapFrame).CornerRadius = UDim.new(1, 0)
+            local st = Instance.new("UIStroke", minimapFrame); st.Color = Color3.new(1, 1, 1); st.Thickness = 2
+            
+            local selfDot = Instance.new("Frame", minimapFrame)
+            selfDot.Size = UDim2.new(0, 8, 0, 8); selfDot.Position = UDim2.new(0.5, -4, 0.5, -4)
+            selfDot.BackgroundColor3 = Color3.new(0, 1, 0); selfDot.ZIndex = 10; Instance.new("UICorner", selfDot)
+        end
+        
+        for _, v in pairs(minimapFrame:GetChildren()) do if v.Name == "Dot" then v:Destroy() end end
+        local look = cam.CFrame.LookVector
+        local camRotation = math.atan2(look.X, look.Z)
+        
+        for _, model in pairs(workspace:GetDescendants()) do
+            if model:IsA("Model") and model ~= lp.Character and model:FindFirstChildOfClass("Humanoid") then
+                local oRoot = model:FindFirstChild("HumanoidRootPart") or model.PrimaryPart
+                if oRoot then
+                    local diff = oRoot.Position - myRoot.Position
+                    if diff.Magnitude < 250 then
+                        local cosR = math.cos(camRotation); local sinR = math.sin(camRotation)
+                        local x = -(diff.X * cosR - diff.Z * sinR)
+                        local z = -(diff.X * sinR + diff.Z * cosR) 
+                        local dot = Instance.new("Frame", minimapFrame); dot.Name = "Dot"; dot.Size = UDim2.new(0, 6, 0, 6)
+                        dot.BackgroundColor3 = game.Players:GetPlayerFromCharacter(model) and Color3.new(0, 0.6, 1) or Color3.new(1, 0, 0)
+                        dot.Position = UDim2.new(0.5, (x/4)-3, 0.5, (z/4)-3); Instance.new("UICorner", dot)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+Rayfield:LoadConfiguration()
