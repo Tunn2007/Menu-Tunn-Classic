@@ -99,7 +99,7 @@ addTab("🐟 Classic", {
 
 -- Tập 2: Game 1 (Thay "Game 1" thành tên game anh thích)
 addTab("🎮 Boxing 🥊", {
-    {Name = "BALD", Link = "https://rawscripts.net/raw/BALD-untitled-boxing-game-Best-Un*led-Boxing-Game-Script-Keyless-Mirage-Hub-UBG-57580"},
+    {Name = "Mirage Hub", Link = "https://rawscripts.net/raw/BALD-untitled-boxing-game-Best-Un*led-Boxing-Game-Script-Keyless-Mirage-Hub-UBG-57580"},
     {Name = "Lệnh 2", Link = ""},
 })
 
