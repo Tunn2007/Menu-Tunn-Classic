@@ -105,8 +105,8 @@ addTab("🎮 Boxing 🥊", {
 
 
 -- Tập 3: Game 2
-addTab("🎮 Game 2", {
-    {Name = "Lệnh 1", Link = ""},
+addTab("🎮 Thảm hoạ tự nhiên🌊", {
+    {Name = "Super Ring", Link = "https://rawscripts.net/raw/Natural-Disaster-Survival-Super-ring-V4-24296"},
 })
 
 
