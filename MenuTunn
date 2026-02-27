@@ -96,7 +96,7 @@ addTab("🐟 Classic", {
     {Name = "Infinyty Jump", Link = "https://raw.githubusercontent.com/Tunn2007/Menu-Tunn-Classic/refs/heads/main/Infinity%20jump"},
     {Name = "Tàng Hình", Link = "https://rawscripts.net/raw/Universal-Script-Awesome-Invisible-man-21074"},
     {Name = "Hành động", Link = "https://raw.githubusercontent.com/7yd7/Hub/refs/heads/Branch/GUIS/Emotes.lua"},
-    {Name = "Fly", Link = ""},
+    {Name = "Fly", Link = "https://rawscripts.net/raw/Universal-Script-Invinicible-Flight-R15-45414"},
   })  
 
 -- Tập 2: Game 1 (Thay "Game 1" thành tên game anh thích)
